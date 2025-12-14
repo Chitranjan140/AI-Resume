@@ -1,0 +1,41 @@
+import './globals.css'
+import { Inter } from 'next/font/google'
+import { Toaster } from 'react-hot-toast'
+import { AuthProvider } from '@/lib/auth-context'
+import { ThemeProvider } from '@/lib/theme-context'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'AI Resume Analyzer - Smart Job Matching Platform',
+  description: 'Analyze your resume with AI, get job match scores, and improve your career prospects',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider>
+          <AuthProvider>
+            {children}
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'rgba(255, 255, 255, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                },
+              }}
+            />
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  )
+}

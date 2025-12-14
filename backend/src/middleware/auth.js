@@ -22,17 +22,21 @@ const authenticateToken = async (req, res, next) => {
   try {
     // Skip authentication in development if Firebase is not configured
     if (!firebaseInitialized) {
-      req.user = {
-        firebaseUid: 'dev-user',
-        email: 'dev@example.com',
-        name: 'Development User',
-        subscription: 'free',
-        usageStats: {
-          resumesUploaded: 0,
-          analysesPerformed: 0,
-          jobMatches: 0
-        }
+      let user = await User.findOne({ firebaseUid: 'dev-user' })
+      
+      if (!user) {
+        // Get name from request headers if provided
+        const userName = req.headers['x-user-name'] || 'Development User'
+        user = new User({
+          firebaseUid: 'dev-user',
+          email: 'dev@example.com',
+          name: userName,
+          subscription: 'free'
+        })
+        await user.save()
       }
+      
+      req.user = user
       return next()
     }
 
@@ -113,10 +117,8 @@ const requireSubscription = (requiredLevel = 'free') => {
 const checkUsageLimits = (feature) => {
   return async (req, res, next) => {
     try {
-      // Skip usage limits in development
-      if (process.env.NODE_ENV === 'development') {
-        return next()
-      }
+      // Skip usage limits - free service
+      return next()
       
       const limits = {
         free: {

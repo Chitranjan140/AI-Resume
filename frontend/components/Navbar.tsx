@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Brain, Menu, X, Moon, Sun, LogOut, User } from 'lucide-react'
+import { Menu, X, Moon, Sun, LogOut, User } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { useTheme } from '@/lib/theme-context'
+import { Logo } from './Logo'
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -17,9 +18,8 @@ export const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Brain className="w-8 h-8 text-blue-600" />
-            <span className="text-xl font-bold">ResumeAI</span>
+          <Link href="/">
+            <Logo size="md" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -42,7 +42,7 @@ export const Navbar = () => {
                   <div className="relative group">
                     <button className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                       <User className="w-5 h-5" />
-                      <span className="text-sm">{user.email}</span>
+                      <span className="text-sm">{localStorage.getItem('userName') || user.displayName}</span>
                     </button>
                     <div className="absolute right-0 mt-2 w-48 glass-card border border-white/20 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                       <button

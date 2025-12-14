@@ -88,32 +88,40 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 // Process direct payment
 router.post('/process-payment', authenticateToken, async (req, res) => {
   try {
-    const { planType, paymentMethod } = req.body
-    const userId = req.user._id.toString()
+    const { planType } = req.body
+    const userId = req.user._id
     
-    // Simulate payment processing
-    const paymentResult = {
-      success: true,
-      transactionId: `txn_${Date.now()}`,
-      amount: planType === 'premium' ? 999 : 2999
+    const prices = {
+      premium: 9.99,
+      enterprise: 29.99
     }
     
-    // Update user subscription
-    await User.findByIdAndUpdate(userId, {
+    if (!prices[planType]) {
+      return res.status(400).json({
+        error: 'Invalid Plan',
+        message: 'Invalid subscription plan'
+      })
+    }
+    
+    // Update user subscription immediately (mock payment success)
+    const updatedUser = await User.findByIdAndUpdate(userId, {
       subscription: planType,
       subscriptionStatus: 'active',
       subscriptionStartDate: new Date(),
-      subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-    })
+      subscriptionEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    }, { new: true })
     
     res.json({
       success: true,
-      payment: paymentResult,
-      message: 'Payment processed successfully'
+      message: `Successfully upgraded to ${planType} plan`,
+      user: {
+        subscription: updatedUser.subscription,
+        subscriptionStatus: updatedUser.subscriptionStatus
+      }
     })
   } catch (error) {
     console.error('Process payment error:', error)
-    res.status(400).json({
+    res.status(500).json({
       error: 'Payment Error',
       message: error.message
     })

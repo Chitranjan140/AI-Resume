@@ -182,8 +182,17 @@ class AIService {
 
   validateAnalysis(analysis) {
     // Ensure required fields exist with defaults
+    const validatedTechnicalSkills = Array.isArray(analysis.technicalSkills) 
+      ? analysis.technicalSkills.map(skill => ({
+          name: skill.name || 'Unknown Skill',
+          category: skill.category || 'Other',
+          proficiency: skill.proficiency || 'Intermediate',
+          yearsOfExperience: typeof skill.yearsOfExperience === 'number' ? skill.yearsOfExperience : 1
+        }))
+      : []
+    
     return {
-      technicalSkills: Array.isArray(analysis.technicalSkills) ? analysis.technicalSkills : [],
+      technicalSkills: validatedTechnicalSkills,
       softSkills: Array.isArray(analysis.softSkills) ? analysis.softSkills : [],
       experience: {
         totalYears: Math.max(0, analysis.experience?.totalYears || 0),
@@ -215,10 +224,10 @@ class AIService {
         name: skill.charAt(0).toUpperCase() + skill.slice(1),
         category: this.getSkillCategory(skill),
         proficiency: this.getSkillProficiency(resumeText, skill),
-        yearsOfExperience: this.extractExperience(resumeText, skill)
+        yearsOfExperience: this.extractSkillExperience(resumeText, skill)
       })),
       softSkills: this.extractSoftSkills(resumeText),
-      experience: this.extractExperience(resumeText),
+      experience: this.extractOverallExperience(resumeText),
       education: this.extractEducation(resumeText),
       jobRoles: this.extractJobRoles(resumeText),
       overallScore,
@@ -295,7 +304,7 @@ class AIService {
     return 'Beginner'
   }
 
-  extractExperience(resumeText) {
+  extractOverallExperience(resumeText) {
     const yearMatch = resumeText.match(/(\d+)\s*(year|yr)/i)
     const totalYears = yearMatch ? parseInt(yearMatch[1]) : Math.floor(Math.random() * 5) + 1
     
@@ -305,6 +314,19 @@ class AIService {
       roles: this.extractJobRoles(resumeText),
       companies: this.extractCompanies(resumeText)
     }
+  }
+
+  extractSkillExperience(resumeText, skill) {
+    // Extract years of experience for a specific skill
+    const skillPattern = new RegExp(`${skill}.*?(\d+)\s*(year|yr)`, 'i')
+    const match = resumeText.match(skillPattern)
+    
+    if (match) {
+      return parseInt(match[1])
+    }
+    
+    // Fallback: return a random number between 1-3 years
+    return Math.floor(Math.random() * 3) + 1
   }
 
   extractSoftSkills(text) {

@@ -7,9 +7,12 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { userAPI } from '@/lib/api'
 import { Navbar } from '@/components/Navbar'
-import { StatsCard } from '@/components/StatsCard'
+import { DashboardCard } from '@/components/DashboardCard'
 import { SkillsChart } from '@/components/SkillsChart'
 import { ActivityFeed } from '@/components/ActivityFeed'
+import { Logo } from '@/components/Logo'
+import { WaveBackground } from '@/components/WaveBackground'
+
 import { DashboardStats } from '@/types'
 import toast from 'react-hot-toast'
 
@@ -56,55 +59,110 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <WaveBackground />
+      
+      {/* Ambient glow effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/3 left-1/3 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
+      
       <Navbar />
       
-      <div className="pt-20 px-4 pb-8">
+      <div className="pt-20 px-4 pb-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8"
+            transition={{ duration: 0.8 }}
+            className="mb-12 text-center"
           >
-            <h1 className="text-3xl font-bold mb-2">
-              Welcome back, {user?.email?.split('@')[0]}!
-            </h1>
-            <p className="text-slate-600 dark:text-slate-300">
-              Here's your resume analysis overview
-            </p>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="flex justify-center mb-8"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-xl"></div>
+                <Logo size="lg" />
+              </div>
+            </motion.div>
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
+            >
+              Welcome, {localStorage.getItem('userName') || user?.displayName || 'User'}!
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="text-xl text-slate-300 font-light"
+            >
+              Your AI-powered resume command center
+            </motion.p>
           </motion.div>
 
-          {/* Quick Actions */}
+
+
+
+
+          {/* AI Project Overview Cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid md:grid-cols-2 gap-4 mb-8"
+            transition={{ delay: 1.0 }}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
           >
-            <Link href="/analyze" className="glass-card p-6 hover:scale-105 transition-transform duration-200 group">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Upload className="w-6 h-6 text-white" />
+            <Link href="/resume-maker" className="group relative overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <FileText className="w-8 h-8 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold">Upload New Resume</h3>
-                  <p className="text-slate-600 dark:text-slate-300">Get AI-powered analysis</p>
-                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Resume Builder</h3>
+                <p className="text-slate-300 text-sm">Create professional resumes with AI assistance</p>
               </div>
             </Link>
 
-            <Link href="/resumes" className="glass-card p-6 hover:scale-105 transition-transform duration-200 group">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Eye className="w-6 h-6 text-white" />
+            <Link href="/analyze" className="group relative overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Upload className="w-8 h-8 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold">View All Resumes</h3>
-                  <p className="text-slate-600 dark:text-slate-300">Manage your uploads</p>
-                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Skill Analyzer</h3>
+                <p className="text-slate-300 text-sm">AI-powered skill assessment and recommendations</p>
               </div>
             </Link>
+
+            <div className="group relative overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Target className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">ATS Score</h3>
+                <p className="text-slate-300 text-sm">Optimize for Applicant Tracking Systems</p>
+              </div>
+            </div>
+
+            <div className="group relative overflow-hidden backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <TrendingUp className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">AI Suggestions</h3>
+                <p className="text-slate-300 text-sm">Smart recommendations for improvement</p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Stats Grid */}
@@ -114,33 +172,37 @@ export default function DashboardPage() {
             transition={{ delay: 0.2 }}
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
-            <StatsCard
+            <DashboardCard
               title="Total Resumes"
               value={stats.totalResumes}
               icon={FileText}
-              color="blue"
-              subtitle={`${stats.analyzedResumes} analyzed`}
+              gradient="from-blue-500 to-cyan-500"
+              delay={0.1}
+              trend={{ value: 12, isPositive: true }}
             />
-            <StatsCard
+            <DashboardCard
               title="Average Score"
               value={`${stats.averageScore}%`}
               icon={TrendingUp}
-              color="green"
-              subtitle="Resume quality"
+              gradient="from-green-500 to-emerald-500"
+              delay={0.2}
+              trend={{ value: 8, isPositive: true }}
             />
-            <StatsCard
+            <DashboardCard
               title="ATS Score"
               value={`${stats.averageAtsScore}%`}
               icon={Target}
-              color="purple"
-              subtitle="ATS compatibility"
+              gradient="from-purple-500 to-pink-500"
+              delay={0.3}
+              trend={{ value: 15, isPositive: true }}
             />
-            <StatsCard
+            <DashboardCard
               title="Job Matches"
               value={stats.totalMatches}
               icon={Target}
-              color="orange"
-              subtitle={`${stats.highMatches} high matches`}
+              gradient="from-orange-500 to-red-500"
+              delay={0.4}
+              trend={{ value: 23, isPositive: true }}
             />
           </motion.div>
 
@@ -173,15 +235,10 @@ export default function DashboardPage() {
             className="mt-8 glass-card p-6"
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Current Plan: {user?.subscription?.charAt(0).toUpperCase() + user?.subscription?.slice(1) || 'Free'}</h3>
-              {user?.subscription === 'free' && (
-                <Link href="/pricing" className="btn-primary text-sm">
-                  Upgrade Plan
-                </Link>
-              )}
+              <h3 className="text-lg font-semibold">Current Plan: Free</h3>
             </div>
             
-            {user?.subscription === 'free' ? (
+            {true ? (
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <div className="flex justify-between text-sm mb-1">

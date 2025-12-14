@@ -6,13 +6,15 @@ const compression = require('compression')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
 const connectDB = require('./src/utils/database')
+const hpp = require('hpp')
+const mongoSanitize = require('express-mongo-sanitize')
 
 // Import routes
 const authRoutes = require('./src/routes/auth')
 const resumeRoutes = require('./src/routes/resume')
 const userRoutes = require('./src/routes/user')
 const adminRoutes = require('./src/routes/admin')
-const paymentRoutes = require('./src/routes/payment')
+// Payment routes removed - free service
 
 const app = express()
 
@@ -20,8 +22,19 @@ const app = express()
 connectDB()
 
 // Security middleware
-app.use(helmet())
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}))
 app.use(compression())
+app.use(hpp())
+app.use(mongoSanitize())
 
 // Rate limiting
 const limiter = rateLimit({
@@ -64,7 +77,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/resume', resumeRoutes)
 app.use('/api/user', userRoutes)
 app.use('/api/admin', adminRoutes)
-app.use('/api/payment', paymentRoutes)
+// Payment API removed - free service
 
 // Error handling middleware
 app.use((err, req, res, next) => {

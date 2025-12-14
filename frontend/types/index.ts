@@ -2,6 +2,7 @@ export interface User {
   id: string
   email: string
   name: string
+  subscription?: string
   createdAt: string
 }
 
@@ -9,9 +10,10 @@ export interface Resume {
   id: string
   userId: string
   filename: string
-  fileUrl: string
-  extractedText: string
+  fileUrl?: string
+  extractedText?: string
   uploadedAt: string
+  status: string
   analysis?: ResumeAnalysis
 }
 
@@ -26,6 +28,8 @@ export interface ResumeAnalysis {
   overallScore: number
   suggestions: string[]
   atsScore: number
+  strengths: string[]
+  weaknesses: string[]
   createdAt: string
 }
 
@@ -52,26 +56,57 @@ export interface Education {
 export interface JobMatch {
   id: string
   resumeId: string
+  jobTitle: string
+  company: string
   jobDescription: string
   matchScore: number
   strengths: string[]
   weaknesses: string[]
   missingSkills: string[]
   recommendations: string[]
+  analysis: {
+    strengths: string[]
+    weaknesses: string[]
+    missingSkills: {
+      skill: string
+      category?: string
+      importance: 'High' | 'Medium' | 'Low'
+    }[]
+    recommendations: string[]
+  }
   createdAt: string
 }
 
 export interface DashboardStats {
-  totalResumes: number
-  averageScore: number
-  totalMatches: number
-  topSkills: string[]
+  stats: {
+    totalResumes: number
+    analyzedResumes: number
+    totalMatches: number
+    averageScore: number
+    averageAtsScore: number
+    averageMatchScore: number
+    highMatches: number
+  }
+  topSkills: {
+    name: string
+    category: string
+    count: number
+    experience: number
+  }[]
   recentActivity: Activity[]
+  usageStats: {
+    resumesUploaded: number
+    analysesPerformed: number
+    jobMatches: number
+  }
 }
 
 export interface Activity {
   id: string
-  type: 'upload' | 'analysis' | 'match'
+  type: 'upload' | 'analysis' | 'match' | 'resume'
+  title: string
+  subtitle: string
   description: string
   timestamp: string
+  status?: 'completed' | 'processing' | 'failed'
 }

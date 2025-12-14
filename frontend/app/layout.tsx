@@ -9,6 +9,15 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata = {
   title: 'AI Resume Analyzer - Smart Job Matching Platform',
   description: 'Analyze your resume with AI, get job match scores, and improve your career prospects',
+  keywords: 'resume analyzer, AI resume, job matching, ATS optimization, career development',
+  authors: [{ name: 'AI Resume Analyzer' }],
+  viewport: 'width=device-width, initial-scale=1',
+  robots: 'index, follow',
+  openGraph: {
+    title: 'AI Resume Analyzer - Smart Job Matching Platform',
+    description: 'Analyze your resume with AI, get job match scores, and improve your career prospects',
+    type: 'website',
+  },
 }
 
 export default function RootLayout({

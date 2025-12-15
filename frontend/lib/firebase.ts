@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,10 +11,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 }
 
-const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+let app, auth, db
+try {
+  app = initializeApp(firebaseConfig)
+  auth = getAuth(app)
+  db = getFirestore(app)
+} catch (error) {
+  console.warn('Firebase not configured properly, using mock auth')
+}
+
+export { auth, db }
 export const googleProvider = new GoogleAuthProvider()
 
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-})
+if (googleProvider) {
+  googleProvider.setCustomParameters({
+    prompt: 'select_account'
+  })
+}

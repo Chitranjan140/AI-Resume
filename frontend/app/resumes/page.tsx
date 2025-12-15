@@ -24,10 +24,13 @@ export default function ResumesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!user) return
     fetchResumes()
-  }, [])
+  }, [user])
 
   const fetchResumes = async () => {
+    if (!user) return
+
     try {
       const response = await api.get('/resume/list')
       setResumes(response.data.resumes || [])

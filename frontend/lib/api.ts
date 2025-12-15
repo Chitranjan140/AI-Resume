@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { auth } from './firebase'
 
 export const api = axios.create({
   baseURL: (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api',
@@ -7,6 +8,40 @@ export const api = axios.create({
 
 // Track if we're already redirecting to prevent multiple redirects
 let isRedirecting = false
+
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  async (config) => {
+    try {
+      if (auth && auth.currentUser) {
+        // Get Firebase token
+        const token = await auth.currentUser.getIdToken()
+        config.headers.Authorization = `Bearer ${token}`
+      } else {
+        // Check for mock auth session
+        const userEmail = localStorage.getItem('userEmail')
+        const userName = localStorage.getItem('userName')
+        const rememberUser = localStorage.getItem('rememberUser')
+        
+        if (rememberUser === 'true' && userEmail) {
+          // For mock auth, send user info in headers
+          config.headers['x-user-email'] = userEmail
+          config.headers['x-user-name'] = userName || 'User'
+          config.headers['x-mock-auth'] = 'true'
+        }
+        else {
+          try {
+            console.warn('Request sent without auth headers to', config.url, 'rememberUser=', rememberUser)
+          } catch (e) {}
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to get auth token:', error)
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
 
 api.interceptors.response.use(
   (response) => response,
@@ -17,12 +52,36 @@ api.interceptors.response.use(
         !isRedirecting &&
         typeof window !== 'undefined' && 
         !window.location.pathname.includes('/auth/')) {
-      
-      isRedirecting = true
-      // Add a small delay to prevent conflicts with React navigation
-      setTimeout(() => {
-        window.location.href = '/auth/login'
-      }, 100)
+      try {
+        const rememberUser = localStorage.getItem('rememberUser')
+        const userEmail = localStorage.getItem('userEmail')
+        console.warn('API 401 on', error.config?.url, 'rememberUser=', rememberUser, 'userEmail=', userEmail, 'authCurrentUser=', !!(auth && auth.currentUser))
+
+        // If the user asked to be remembered, give Firebase a short window to restore session
+        if (rememberUser === 'true') {
+          // Wait briefly before redirecting to allow auth init to finish
+          setTimeout(() => {
+            if (auth && auth.currentUser) {
+              // Token restored; don't redirect
+              isRedirecting = false
+              return
+            }
+            isRedirecting = true
+            window.location.href = '/auth/login'
+          }, 1500)
+        } else {
+          isRedirecting = true
+          setTimeout(() => {
+            window.location.href = '/auth/login'
+          }, 100)
+        }
+      } catch (e) {
+        // ignore
+        isRedirecting = true
+        setTimeout(() => {
+          window.location.href = '/auth/login'
+        }, 100)
+      }
     }
     return Promise.reject(error)
   }

@@ -33,7 +33,8 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      await signUp(email, password)
+      // Remember new users by default
+      await signUp(email, password, email.split('@')[0], true)
       toast.success('Account created successfully!')
       router.push('/dashboard')
     } catch (error: any) {

@@ -20,22 +20,19 @@ try {
 
 const authenticateToken = async (req, res, next) => {
   try {
-    // Skip authentication in development if Firebase is not configured
-    if (!firebaseInitialized) {
-      let user = await User.findOne({ firebaseUid: 'dev-user' })
-      
-      if (!user) {
-        // Get name from request headers if provided
-        const userName = req.headers['x-user-name'] || 'Development User'
-        user = new User({
-          firebaseUid: 'dev-user',
-          email: 'dev@example.com',
-          name: userName,
-          subscription: 'free'
-        })
-        await user.save()
-      }
-      
+    // Handle mock authentication from frontend
+    if (req.headers['x-mock-auth'] === 'true' || !firebaseInitialized) {
+      const userEmail = req.headers['x-user-email'] || 'dev@example.com'
+      const userName = req.headers['x-user-name'] || 'Development User'
+
+      // Use an upsert to avoid race conditions creating duplicate users
+      const firebaseUid = 'mock-user-' + Date.now()
+      const user = await User.findOneAndUpdate(
+        { email: userEmail },
+        { $setOnInsert: { firebaseUid, email: userEmail, name: userName, subscription: 'free' } },
+        { new: true, upsert: true }
+      )
+
       req.user = user
       return next()
     }
@@ -43,6 +40,7 @@ const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers.authorization
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.warn('No Authorization header or malformed. x-mock-auth=', req.headers['x-mock-auth'], 'x-user-email=', req.headers['x-user-email'])
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'No token provided'
@@ -55,18 +53,11 @@ const authenticateToken = async (req, res, next) => {
     const decodedToken = await admin.auth().verifyIdToken(token)
     
     // Find or create user in our database
-    let user = await User.findOne({ firebaseUid: decodedToken.uid })
-    
-    if (!user) {
-      // Create new user if doesn't exist
-      user = new User({
-        firebaseUid: decodedToken.uid,
-        email: decodedToken.email,
-        name: decodedToken.name || decodedToken.email.split('@')[0],
-        profilePicture: decodedToken.picture
-      })
-      await user.save()
-    }
+    let user = await User.findOneAndUpdate(
+      { firebaseUid: decodedToken.uid },
+      { $setOnInsert: { firebaseUid: decodedToken.uid, email: decodedToken.email, name: decodedToken.name || decodedToken.email.split('@')[0], profilePicture: decodedToken.picture } },
+      { new: true, upsert: true }
+    )
 
     // Attach user to request
     req.user = user
